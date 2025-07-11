@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package class;
+
+import "google/protobuf/timestamp.proto";
+
+service DiagramService {
+    rpc SaveClassDiagram(File) returns (BoolValue); // 成功True, 失敗False
+    rpc GetClassDiagram(File_ID) returns (File);
+    rpc IsExistingClassDiagram(File_ID) returns (BoolValue); //存在True, ないFalse
+    rpc DeleteClassDiagram(File_ID) returns (BoolValue); //成功True, 失敗False
+}
+
+message File {
+    google.protobuf.Timestamp last_modified = 1; // 最終更新日時
+    google.protobuf.Timestamp created_at = 2; // 作成日時
+    File_ID file_id = 3; // ファイルの識別子
+    string name = 4; // ファイル名
+    repeated Class classes = 5; // クラスのリスト
+}
+
+message File_ID {
+    string id = 1; //File ID
+}
+
+message BoolValue {
+    bool value = 1; // 真偽値
+}
+
+message Class{
+    // クラスの識別子
+    string id = 1;
+    string name = 2;
+
+    // 親クラスやインターフェースなどとの関係
+    optional Relations relations = 3;
+
+    // クラスの属性とメソッド
+    repeated Variable attributes = 4;
+    repeated Method methods = 5;
+}
+
+message Method {
+    visibility visibility = 1;
+    optional bool is_abstract = 2; // 抽象メソッド
+    optional bool is_static = 3; // static メソッド
+    string name = 4;
+    string return_type = 5;
+    repeated Variable parameters = 6;
+}
+
+message Variable {
+    optional visibility visibility = 1;
+    optional bool is_static = 2; // static フィールド
+    string name = 3;
+    string type = 4;
+}
+
+message RelationInfo {
+    string target_class_id = 1;
+    Relation relation = 2;
+    optional Multiplicity multiplicity_p = 3; // 親側の多重度
+    optional Multiplicity multiplicity_c = 4; // 子側の多重度
+    optional string role_name_p = 5; // 親側のロール名
+    optional string role_name_c = 6; // 子側のロール名
+
+}
+
+message Relations {
+    repeated RelationInfo relations = 1;
+}
+
+enum Relation {
+    NONE = 0;
+    INHERITANCE = 1;
+    IMPLEMENTATION = 2;
+    ASSOCIATION = 3;
+    AGGREGATION = 4;
+    COMPOSITION = 5;
+}
+
+enum visibility {
+    NON_MODIFIER = 0;
+    PUBLIC = 1;
+    PRIVATE = 2;
+    PROTECTED = 3;
+}
+
+message Multiplicity {
+    uint32 lower = 1;
+    optional uint32 upper = 2;
+}
